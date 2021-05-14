@@ -48,36 +48,36 @@
 static FORCE_INLINE uint64_t ReadTSC()
 {
 #ifdef _MSC_VER
-    return __rdtsc();
+	return __rdtsc();
 #else
-    uint32_t hi, lo;
-    __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-    return (((uint64_t)hi) << 32) | lo;
+	uint32_t hi, lo;
+	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
+	return (((uint64_t)hi) << 32) | lo;
 #endif
 }
 
 
 struct ProfileScopeData
 {
-    const char* m_name;
-    uint64_t m_totalCycles;
-    uint32_t m_totalSamples;
+	const char* m_name;
+	uint64_t m_totalCycles;
+	uint32_t m_totalSamples;
 
-    enum
-    {
-        MAX_THREAD_ID_LENGTH = 11,
-        MAX_SAMPLE_COUNT = 128,
-        MAX_DATA_COUNT = 1024
-    };
+	enum
+	{
+		MAX_THREAD_ID_LENGTH = 11,
+		MAX_SAMPLE_COUNT = 128,
+		MAX_DATA_COUNT = 1024
+	};
 
-    char m_threadId[MAX_THREAD_ID_LENGTH + 1];
+	char m_threadId[MAX_THREAD_ID_LENGTH + 1];
 
-    static ProfileScopeData* s_data[MAX_DATA_COUNT];
-    static volatile long s_dataCount;
-    static double s_tscSpeed;
+	static ProfileScopeData* s_data[MAX_DATA_COUNT];
+	static volatile long s_dataCount;
+	static double s_tscSpeed;
 
-    static void Register(ProfileScopeData* data);
-    static void Init();
+	static void Register(ProfileScopeData* data);
+	static void Init();
 };
 
 static_assert(std::is_trivial<ProfileScopeData>::value, "ProfileScopeData must be a trivial struct");
@@ -87,25 +87,25 @@ static_assert(sizeof(ProfileScopeData) <= 32, "ProfileScopeData struct is too bi
 class ProfileScope
 {
 public:
-    FORCE_INLINE ProfileScope(ProfileScopeData& data)
-        : m_data(data)
-    {
-        if (m_data.m_totalCycles == 0) {
-            ProfileScopeData::Register(&data);
-        }
+	FORCE_INLINE ProfileScope(ProfileScopeData& data)
+		: m_data(data)
+	{
+		if (m_data.m_totalCycles == 0) {
+			ProfileScopeData::Register(&data);
+		}
 
-        m_startCounter = ReadTSC();
-    }
+		m_startCounter = ReadTSC();
+	}
 
-    FORCE_INLINE ~ProfileScope()
-    {
-        m_data.m_totalCycles += ReadTSC() - m_startCounter;
-        ++m_data.m_totalSamples;
-    }
+	FORCE_INLINE ~ProfileScope()
+	{
+		m_data.m_totalCycles += ReadTSC() - m_startCounter;
+		++m_data.m_totalSamples;
+	}
 
 private:
-    ProfileScopeData& m_data;
-    uint64_t m_startCounter;
+	ProfileScopeData& m_data;
+	uint64_t m_startCounter;
 };
 
 
@@ -118,15 +118,23 @@ private:
 
 
 #include "crypto/randomx/blake2/blake2.h"
-
+#include "crypto/randomx/blake2avx/blake2b.h"
 
 struct rx_blake2b_wrapper
 {
-    FORCE_INLINE static void run(void* out, size_t outlen, const void* in, size_t inlen)
-    {
-        PROFILE_SCOPE(RandomX_Blake2b);
-        rx_blake2b(out, outlen, in, inlen);
-    }
+	FORCE_INLINE static void run(void* out, size_t outlen, const void* in, size_t inlen)
+	{
+		PROFILE_SCOPE(RandomX_Blake2b);
+		if (outlen == 32) {
+			blake2bavx_256((uint8_t*)out, (const unsigned char*)(in), inlen);
+		}
+		else if (outlen == 64) {
+			blake2bavx_512((uint8_t*)out, (const unsigned char*)(in), inlen);
+		}
+		//	else
+
+				//rx_blake2b(out, outlen, in, inlen);
+	}
 };
 
 

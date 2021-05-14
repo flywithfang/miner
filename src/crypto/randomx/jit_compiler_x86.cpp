@@ -51,6 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   include <intrin.h>
 #endif
 
+#include "base/tools/Cvt.h"
+
 static bool hugePagesJIT = false;
 static int optimizedDatasetInit = -1;
 
@@ -105,56 +107,56 @@ namespace randomx {
 	*/
 
 #	if defined(_MSC_VER) && (defined(_DEBUG) || defined (RELWITHDEBINFO))
-	#define ADDR(x) ((((uint8_t*)&x)[0] == 0xE9) ? (((uint8_t*)&x) + *(const int32_t*)(((uint8_t*)&x) + 1) + 5) : ((uint8_t*)&x))
+#define ADDR(x) ((((uint8_t*)&x)[0] == 0xE9) ? (((uint8_t*)&x) + *(const int32_t*)(((uint8_t*)&x) + 1) + 5) : ((uint8_t*)&x))
 #	else
-	#define ADDR(x) ((uint8_t*)&x)
+#define ADDR(x) ((uint8_t*)&x)
 #	endif
 
-	#define codePrefetchScratchpad ADDR(randomx_prefetch_scratchpad)
-	#define codePrefetchScratchpadEnd ADDR(randomx_prefetch_scratchpad_end)
-	#define codePrologue ADDR(randomx_program_prologue)
-	#define codeLoopBegin ADDR(randomx_program_loop_begin)
-	#define codeLoopLoad ADDR(randomx_program_loop_load)
-	#define codeLoopLoadXOP ADDR(randomx_program_loop_load_xop)
-	#define codeProgamStart ADDR(randomx_program_start)
-	#define codeReadDatasetLightSshInit ADDR(randomx_program_read_dataset_sshash_init)
-	#define codeReadDatasetLightSshFin ADDR(randomx_program_read_dataset_sshash_fin)
-	#define codeDatasetInit ADDR(randomx_dataset_init)
-	#define codeDatasetInitAVX2_prologue ADDR(randomx_dataset_init_avx2_prologue)
-	#define codeDatasetInitAVX2_loop_end ADDR(randomx_dataset_init_avx2_loop_end)
-	#define codeDatasetInitAVX2_loop_epilogue ADDR(randomx_dataset_init_avx2_epilogue)
-	#define codeDatasetInitAVX2_ssh_load ADDR(randomx_dataset_init_avx2_ssh_load)
-	#define codeDatasetInitAVX2_ssh_prefetch ADDR(randomx_dataset_init_avx2_ssh_prefetch)
-	#define codeLoopStore ADDR(randomx_program_loop_store)
-	#define codeLoopEnd ADDR(randomx_program_loop_end)
-	#define codeEpilogue ADDR(randomx_program_epilogue)
-	#define codeProgramEnd ADDR(randomx_program_end)
-	#define codeShhLoad ADDR(randomx_sshash_load)
-	#define codeShhPrefetch ADDR(randomx_sshash_prefetch)
-	#define codeShhEnd ADDR(randomx_sshash_end)
-	#define codeShhInit ADDR(randomx_sshash_init)
+#define codePrefetchScratchpad ADDR(randomx_prefetch_scratchpad)
+#define codePrefetchScratchpadEnd ADDR(randomx_prefetch_scratchpad_end)
+#define codePrologue ADDR(randomx_program_prologue)
+#define codeLoopBegin ADDR(randomx_program_loop_begin)
+#define codeLoopLoad ADDR(randomx_program_loop_load)
+#define codeLoopLoadXOP ADDR(randomx_program_loop_load_xop)
+#define codeProgamStart ADDR(randomx_program_start)
+#define codeReadDatasetLightSshInit ADDR(randomx_program_read_dataset_sshash_init)
+#define codeReadDatasetLightSshFin ADDR(randomx_program_read_dataset_sshash_fin)
+#define codeDatasetInit ADDR(randomx_dataset_init)
+#define codeDatasetInitAVX2_prologue ADDR(randomx_dataset_init_avx2_prologue)
+#define codeDatasetInitAVX2_loop_end ADDR(randomx_dataset_init_avx2_loop_end)
+#define codeDatasetInitAVX2_loop_epilogue ADDR(randomx_dataset_init_avx2_epilogue)
+#define codeDatasetInitAVX2_ssh_load ADDR(randomx_dataset_init_avx2_ssh_load)
+#define codeDatasetInitAVX2_ssh_prefetch ADDR(randomx_dataset_init_avx2_ssh_prefetch)
+#define codeLoopStore ADDR(randomx_program_loop_store)
+#define codeLoopEnd ADDR(randomx_program_loop_end)
+#define codeEpilogue ADDR(randomx_program_epilogue)
+#define codeProgramEnd ADDR(randomx_program_end)
+#define codeShhLoad ADDR(randomx_sshash_load)
+#define codeShhPrefetch ADDR(randomx_sshash_prefetch)
+#define codeShhEnd ADDR(randomx_sshash_end)
+#define codeShhInit ADDR(randomx_sshash_init)
 
-	#define prefetchScratchpadSize (codePrefetchScratchpadEnd - codePrefetchScratchpad)
-	#define prologueSize (codeLoopBegin - codePrologue)
-	#define loopLoadSize (codeLoopLoadXOP - codeLoopLoad)
-	#define loopLoadXOPSize (codeProgamStart - codeLoopLoadXOP)
-	#define readDatasetLightInitSize (codeReadDatasetLightSshFin - codeReadDatasetLightSshInit)
-	#define readDatasetLightFinSize (codeLoopStore - codeReadDatasetLightSshFin)
-	#define loopStoreSize (codeLoopEnd - codeLoopStore)
-	#define datasetInitSize (codeDatasetInitAVX2_prologue - codeDatasetInit)
-	#define datasetInitAVX2_prologue_size (codeDatasetInitAVX2_loop_end - codeDatasetInitAVX2_prologue)
-	#define datasetInitAVX2_loop_end_size (codeDatasetInitAVX2_loop_epilogue - codeDatasetInitAVX2_loop_end)
-	#define datasetInitAVX2_epilogue_size (codeDatasetInitAVX2_ssh_load - codeDatasetInitAVX2_loop_epilogue)
-	#define datasetInitAVX2_ssh_load_size (codeDatasetInitAVX2_ssh_prefetch - codeDatasetInitAVX2_ssh_load)
-	#define datasetInitAVX2_ssh_prefetch_size (codeEpilogue - codeDatasetInitAVX2_ssh_prefetch)
-	#define epilogueSize (codeShhLoad - codeEpilogue)
-	#define codeSshLoadSize (codeShhPrefetch - codeShhLoad)
-	#define codeSshPrefetchSize (codeShhEnd - codeShhPrefetch)
-	#define codeSshInitSize (codeProgramEnd - codeShhInit)
+#define prefetchScratchpadSize (codePrefetchScratchpadEnd - codePrefetchScratchpad)
+#define prologueSize (codeLoopBegin - codePrologue)
+#define loopLoadSize (codeLoopLoadXOP - codeLoopLoad)
+#define loopLoadXOPSize (codeProgamStart - codeLoopLoadXOP)
+#define readDatasetLightInitSize (codeReadDatasetLightSshFin - codeReadDatasetLightSshInit)
+#define readDatasetLightFinSize (codeLoopStore - codeReadDatasetLightSshFin)
+#define loopStoreSize (codeLoopEnd - codeLoopStore)
+#define datasetInitSize (codeDatasetInitAVX2_prologue - codeDatasetInit)
+#define datasetInitAVX2_prologue_size (codeDatasetInitAVX2_loop_end - codeDatasetInitAVX2_prologue)
+#define datasetInitAVX2_loop_end_size (codeDatasetInitAVX2_loop_epilogue - codeDatasetInitAVX2_loop_end)
+#define datasetInitAVX2_epilogue_size (codeDatasetInitAVX2_ssh_load - codeDatasetInitAVX2_loop_epilogue)
+#define datasetInitAVX2_ssh_load_size (codeDatasetInitAVX2_ssh_prefetch - codeDatasetInitAVX2_ssh_load)
+#define datasetInitAVX2_ssh_prefetch_size (codeEpilogue - codeDatasetInitAVX2_ssh_prefetch)
+#define epilogueSize (codeShhLoad - codeEpilogue)
+#define codeSshLoadSize (codeShhPrefetch - codeShhLoad)
+#define codeSshPrefetchSize (codeShhEnd - codeShhPrefetch)
+#define codeSshInitSize (codeProgramEnd - codeShhInit)
 
-	#define epilogueOffset ((CodeSize - epilogueSize) & ~63)
+#define epilogueOffset ((CodeSize - epilogueSize) & ~63)
 
-	constexpr int32_t superScalarHashOffset = 32768;
+	constexpr int32_t superScalarHashOffset = CodeSize >> 1;// 32768;
 
 	static const uint8_t NOP1[] = { 0x90 };
 	static const uint8_t NOP2[] = { 0x66, 0x90 };
@@ -186,9 +188,9 @@ namespace randomx {
 	};
 
 	static inline uint8_t* alignToPage(uint8_t* p, size_t pageSize) {
-		size_t k = (size_t) p;
+		size_t k = (size_t)p;
 		k -= k % pageSize;
-		return (uint8_t*) k;
+		return (uint8_t*)k;
 	}
 
 	size_t JitCompilerX86::getCodeSize() {
@@ -406,7 +408,7 @@ namespace randomx {
 	}
 
 	template
-	void JitCompilerX86::generateSuperscalarHash(SuperscalarProgram(&programs)[RANDOMX_CACHE_MAX_ACCESSES]);
+		void JitCompilerX86::generateSuperscalarHash(SuperscalarProgram(&programs)[RANDOMX_CACHE_MAX_ACCESSES]);
 
 	void JitCompilerX86::generateDatasetInitCode() {
 		// AVX2 code is generated in generateSuperscalarHash()
@@ -425,7 +427,7 @@ namespace randomx {
 		}
 
 #		ifdef XMRIG_FIX_RYZEN
-        xmrig::RxFix::setMainLoopBounds(mainLoopBounds);
+		xmrig::RxFix::setMainLoopBounds(mainLoopBounds);
 #		endif
 
 		memcpy(code + prologueSize - 48, &pcfg.eMask, sizeof(pcfg.eMask));
@@ -488,6 +490,11 @@ namespace randomx {
 		emit32(prologueSize - codePos - 4, code, codePos);
 		emitByte(0xe9, code, codePos);
 		emit32(epilogueOffset - codePos - 4, code, codePos);
+		//std::cout << "code size" << codePos << "/" << CodeSize << "," << prologueSize << "," << epilogueSize << std::endl;
+		//	auto h = xmrig::Cvt::toHex(code, codePos);
+		//	std::cout << h << std::endl;
+
+
 	}
 
 	template<bool AVX2>
@@ -552,21 +559,21 @@ namespace randomx {
 			}
 			break;
 		case randomx::SuperscalarInstructionType::IROR_C:
-			{
-				const uint32_t shift = instr.getImm32() & 63;
-				emit32(0x00C8C149UL + (instr.dst << 16) + (shift << 24), code, codePos);
-				if (AVX2) {
-					static const uint8_t t[] = { 0xC5, 0xBD, 0x73, 0xD0, 0x00, 0xC5, 0xB5, 0x73, 0xF0, 0x00, 0xC4, 0xC1, 0x3D, 0xEB, 0xC1 };
-					uint8_t* p = code + codePos;
-					emit(t, code, codePos);
-					p[3] += instr.dst;
-					p[4] = shift;
-					p[8] += instr.dst;
-					p[9] = 64 - shift;
-					p[14] += instr.dst * 8;
-				}
+		{
+			const uint32_t shift = instr.getImm32() & 63;
+			emit32(0x00C8C149UL + (instr.dst << 16) + (shift << 24), code, codePos);
+			if (AVX2) {
+				static const uint8_t t[] = { 0xC5, 0xBD, 0x73, 0xD0, 0x00, 0xC5, 0xB5, 0x73, 0xF0, 0x00, 0xC4, 0xC1, 0x3D, 0xEB, 0xC1 };
+				uint8_t* p = code + codePos;
+				emit(t, code, codePos);
+				p[3] += instr.dst;
+				p[4] = shift;
+				p[8] += instr.dst;
+				p[9] = 64 - shift;
+				p[14] += instr.dst * 8;
 			}
-			break;
+		}
+		break;
 		case randomx::SuperscalarInstructionType::IADD_C7:
 		case randomx::SuperscalarInstructionType::IADD_C8:
 		case randomx::SuperscalarInstructionType::IADD_C9:
@@ -809,7 +816,7 @@ namespace randomx {
 	void JitCompilerX86::h_ISUB_R(const Instruction& instr) {
 		uint8_t* const p = code;
 		uint32_t pos = codePos;
-		
+
 		const uint32_t src = instr.src % RegistersCount;
 		const uint32_t dst = instr.dst % RegistersCount;
 
@@ -974,7 +981,7 @@ namespace randomx {
 		const uint64_t src = instr.src % RegistersCount;
 		const uint64_t dst = instr.dst % RegistersCount;
 
-		*(uint64_t*)(p + pos) = 0x8b4ce8f749c08b49ull + (dst << 16) + (src << 40);
+		*(uint64_t*)(p + pos) = 0x8b4ce8f749c08b49ull + (dst << 16) + (src << 40);//dst*src >>64
 		pos += 8;
 		emitByte(0xc2 + 8 * dst, p, pos);
 
@@ -1009,7 +1016,7 @@ namespace randomx {
 	void JitCompilerX86::h_IMUL_RCP(const Instruction& instr) {
 		uint8_t* const p = code;
 		uint32_t pos = codePos;
-		
+
 		uint64_t divisor = instr.getImm32();
 		if (!isZeroOrPowerOf2(divisor)) {
 			*(uint32_t*)(p + pos) = 0xb848;
@@ -1399,7 +1406,7 @@ namespace randomx {
 		}
 
 		//mark all registers as used
-		uint64_t* r = (uint64_t*) registerUsage;
+		uint64_t* r = (uint64_t*)registerUsage;
 		uint64_t k = pos;
 		k |= k << 32;
 		for (unsigned j = 0; j < RegistersCount / 2; ++j) {

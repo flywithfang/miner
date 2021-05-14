@@ -26,35 +26,91 @@
 namespace xmrig {
 
 
-class Chrono
-{
-public:
-    static inline uint64_t highResolutionMSecs()
-    {
-        using namespace std::chrono;
+	class Chrono
+	{
+	public:
+		static inline uint64_t highResolutionMSecs()
+		{
+			using namespace std::chrono;
 
-        return static_cast<uint64_t>(time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count());
-    }
-
-
-    static inline uint64_t steadyMSecs()
-    {
-        using namespace std::chrono;
-        if (high_resolution_clock::is_steady) {
-            return static_cast<uint64_t>(time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count());
-        }
-
-        return static_cast<uint64_t>(time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count());
-    }
+			return static_cast<uint64_t>(time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count());
+		}
 
 
-    static inline uint64_t currentMSecsSinceEpoch()
-    {
-        using namespace std::chrono;
+		static inline uint64_t steadyMSecs()
+		{
+			using namespace std::chrono;
+			if (high_resolution_clock::is_steady) {
+				return static_cast<uint64_t>(time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count());
+			}
 
-        return static_cast<uint64_t>(time_point_cast<milliseconds>(system_clock::now()).time_since_epoch().count());
-    }
-};
+			return static_cast<uint64_t>(time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count());
+		}
+
+
+		static inline uint64_t currentMSecsSinceEpoch()
+		{
+			using namespace std::chrono;
+
+			return static_cast<uint64_t>(time_point_cast<milliseconds>(system_clock::now()).time_since_epoch().count());
+		}
+	};
+
+
+
+	class Stopwatch {
+	public:
+		Stopwatch(bool startNow = false) {
+			reset();
+			if (startNow) {
+				start();
+			}
+		}
+		void reset() {
+			isRunning = false;
+			elapsed = 0;
+		}
+		void start() {
+			if (!isRunning) {
+				startMark = std::chrono::high_resolution_clock::now();
+				isRunning = true;
+			}
+		}
+		void restart() {
+			startMark = std::chrono::high_resolution_clock::now();
+			isRunning = true;
+			elapsed = 0;
+		}
+		void stop() {
+			if (isRunning) {
+				chrono_t endMark = std::chrono::high_resolution_clock::now();
+				uint64_t ns = std::chrono::duration_cast<sw_unit>(endMark - startMark).count();
+				elapsed += ns;
+				isRunning = false;
+			}
+		}
+		double getElapsed() const {
+			return getElapsedNanosec() / 1e+9;
+		}
+
+
+		uint64_t getElapsedNanosec() const {
+			uint64_t elns = elapsed;
+			if (isRunning) {
+				chrono_t endMark = std::chrono::high_resolution_clock::now();
+				uint64_t ns = std::chrono::duration_cast<sw_unit>(endMark - startMark).count();
+				elns += ns;
+			}
+			return elns;
+		}
+	private:
+		using chrono_t = std::chrono::high_resolution_clock::time_point;
+		using sw_unit = std::chrono::nanoseconds;
+		chrono_t startMark;
+		uint64_t elapsed;
+		bool isRunning;
+
+	};
 
 
 } /* namespace xmrig */

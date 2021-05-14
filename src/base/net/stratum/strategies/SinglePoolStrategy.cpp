@@ -35,6 +35,7 @@ xmrig::SinglePoolStrategy::SinglePoolStrategy(const Pool &pool, int retryPause, 
     m_active(false),
     m_listener(listener)
 {
+    printf("single pool strategy\n");
     m_client = pool.createClient(0, this);
     m_client->setRetries(retries);
     m_client->setRetryPause(retryPause * 1000);

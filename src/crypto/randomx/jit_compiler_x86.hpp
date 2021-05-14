@@ -55,10 +55,10 @@ namespace randomx {
 		void generateProgram(Program&, ProgramConfiguration&, uint32_t);
 		void generateProgramLight(Program&, ProgramConfiguration&, uint32_t);
 		template<size_t N>
-		void generateSuperscalarHash(SuperscalarProgram (&programs)[N]);
+		void generateSuperscalarHash(SuperscalarProgram(&programs)[N]);
 		void generateDatasetInitCode();
 
-		inline ProgramFunc *getProgramFunc() const {
+		inline ProgramFunc* getProgramFunc() const {
 #			ifdef XMRIG_SECURE_JIT
 			enableExecution();
 #			endif
@@ -66,7 +66,7 @@ namespace randomx {
 			return reinterpret_cast<ProgramFunc*>(code);
 		}
 
-		inline DatasetInitFunc *getDatasetInitFunc() const {
+		inline DatasetInitFunc* getDatasetInitFunc() const {
 # 			ifdef XMRIG_SECURE_JIT
 			enableExecution();
 #			endif
@@ -131,7 +131,7 @@ namespace randomx {
 		}
 
 		template<size_t N>
-		static void emit(const uint8_t (&src)[N], uint8_t* code, uint32_t& codePos) {
+		static void emit(const uint8_t(&src)[N], uint8_t* code, uint32_t& codePos) {
 			emit(src, N, code, codePos);
 		}
 

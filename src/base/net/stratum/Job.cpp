@@ -73,6 +73,7 @@ bool xmrig::Job::setBlob(const char *blob)
     if (*nonce() != 0 && !m_nicehash) {
         m_nicehash = true;
     }
+    printf("nounce %x  nouncemask %x, offset %d,size %d,nicehash %d\n",*nonce(),nonceMask(),nonceOffset(),nonceSize(),m_nicehash);
 
 #   ifdef XMRIG_PROXY_PROJECT
     memset(m_rawBlob, 0, sizeof(m_rawBlob));
@@ -108,8 +109,12 @@ bool xmrig::Job::setTarget(const char *target)
     const auto raw    = Cvt::fromHex(target, strlen(target));
     const size_t size = raw.size();
 
+        //a/(b/c)
+    //(b/c)/a=b/c/a
     if (size == 4) {
-        m_target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / uint64_t(*reinterpret_cast<const uint32_t *>(raw.data())));
+        auto diff =0xFFFFFFFFULL / uint64_t(*reinterpret_cast<const uint32_t *>(raw.data()));
+        m_target = 0xFFFFFFFFFFFFFFFFULL / diff;
+        printf("job id %s, diff %u, target %llu\n", id().data(), diff,m_target);
     }
     else if (size == 8) {
         m_target = *reinterpret_cast<const uint64_t *>(raw.data());
