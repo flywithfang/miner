@@ -74,9 +74,11 @@ if (WITH_RANDOMX)
 
     if (WITH_SSE4_1)
         list(APPEND SOURCES_CRYPTO src/crypto/randomx/blake2/blake2b_sse41.c)
+        list(APPEND SOURCES_CRYPTO src/crypto/randomx/blake2avx/blake2b_avx.c)
 
         if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
             set_source_files_properties(src/crypto/randomx/blake2/blake2b_sse41.c PROPERTIES COMPILE_FLAGS -msse4.1)
+            set_source_files_properties(src/crypto/randomx/blake2avx/blake2b_avx.c PROPERTIES COMPILE_FLAGS -mavx)
         endif()
     endif()
 
