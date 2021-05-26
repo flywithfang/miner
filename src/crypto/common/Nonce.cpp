@@ -25,7 +25,7 @@
 
 #include "crypto/common/Nonce.h"
 #include <cstdio>
-
+#include "base/io/log/Log.h"
 
 namespace xmrig {
 
@@ -45,7 +45,7 @@ bool xmrig::Nonce::next(uint8_t index, uint32_t* nonce, uint32_t reserveCount, u
 	}
 
 	uint64_t counter = m_nonces[index].fetch_add(reserveCount, std::memory_order_relaxed);
-	printf("nonce %u, reserveCount %u\n", counter, reserveCount);
+	LOG_NOTICE("nonce %u, reserveCount %u", counter, reserveCount);
 	while (true) {
 		if (mask < counter) {
 			return false;

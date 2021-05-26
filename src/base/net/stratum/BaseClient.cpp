@@ -45,7 +45,7 @@ xmrig::BaseClient::BaseClient(int id, IClientListener* listener) :
 	m_listener(listener),
 	m_id(id)
 {
-	printf("client id %d,%s\n", id, typeid(*this).name());
+	LOG_NOTICE("BaseClient id %d", id);
 }
 
 

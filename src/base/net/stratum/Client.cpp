@@ -54,6 +54,8 @@
 #include "base/tools/Chrono.h"
 #include "net/JobResult.h"
 
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #ifdef _MSC_VER
 #   define strncasecmp(x,y,z) _strnicmp(x,y,z)
@@ -87,7 +89,7 @@ xmrig::Client::Client(int id, const char* agent, IClientListener* listener) :
 	m_reader.setListener(this);
 	m_key = m_storage.add(this);
 	m_dns = new Dns(this);
-	printf(" client  %d, %s keeplive %d\n", id, agent, m_keepAlive);
+	//printf(" client  %d, %s keeplive %ld\n", id, agent, m_keepAlive);
 }
 
 
@@ -241,11 +243,11 @@ void xmrig::Client::connect()
 		return;
 	}
 
-#   ifdef XMRIG_FEATURE_TLS
+//#   ifdef XMRIG_FEATURE_TLS
 	if (m_pool.isTLS()) {
 		m_tls = new Tls(this);
 	}
-#   endif
+//#   endif
 
 	resolve(m_pool.host());
 }
@@ -305,7 +307,8 @@ void xmrig::Client::onResolved(const Dns& dns, int status)
 	}
 
 	if (status < 0 && dns.isEmpty()) {
-		if (!isQuiet()) {
+		//if (!isQuiet()) 
+		{
 			LOG_ERR("%s " RED("DNS error: ") RED_BOLD("\"%s\""), tag(), uv_strerror(status));
 		}
 
@@ -314,7 +317,7 @@ void xmrig::Client::onResolved(const Dns& dns, int status)
 
 	const auto& record = dns.get();
 	m_ip = record.ip();
-
+	LOG_NOTICE("%s dns %s -> ip %s, tls %d ", tag(),dns.host().data(),m_ip.data(),isTLS());
 	connect(record.addr(m_socks5 ? m_pool.proxy().port() : m_pool.port()));
 }
 
@@ -454,7 +457,7 @@ bool xmrig::Client::send(BIO* bio)
 		return true;
 	}
 
-	LOG_DEBUG("[%s] TLS send     (%d bytes)", url(), static_cast<int>(buf.len));
+	//LOG_DEBUG("[%s] TLS send     (%d bytes)", url(), static_cast<int>(buf.len));
 
 	bool result = false;
 	if (state() == ConnectedState && uv_is_writable(stream())) {
@@ -527,13 +530,15 @@ int xmrig::Client::resolve(const String& host)
 	}
 
 	if (!m_dns->resolve(host)) {
-		if (!isQuiet()) {
+	//	if (!isQuiet()) 
+		{
 			LOG_ERR("%s " RED("getaddrinfo error: ") RED_BOLD("\"%s\""), tag(), uv_strerror(m_dns->status()));
 		}
 
 		return 1;
 	}
-
+	 auto tid = syscall(SYS_gettid);
+	LOG_NOTICE("%s resolving %s,tls %d, tid=%d ", tag(),host.data(),this->isTLS(),tid);
 	return 0;
 }
 
@@ -879,7 +884,7 @@ void xmrig::Client::read(ssize_t nread, const uv_buf_t* buf)
 
 #   ifdef XMRIG_FEATURE_TLS
 	if (isTLS()) {
-		LOG_DEBUG("[%s] TLS received (%d bytes)", url(), static_cast<int>(nread));
+	//	LOG_DEBUG("[%s] TLS received (%d bytes)", url(), static_cast<int>(nread));
 
 		m_tls->read(buf->base, size);
 	}
@@ -949,7 +954,7 @@ void xmrig::Client::startTimeout()
 		const uint64_t ms = static_cast<uint64_t>(m_pool.keepAlive() > 0 ? m_pool.keepAlive() : Pool::kKeepAliveTimeout) * 1000;
 
 		m_keepAlive = Chrono::steadyMSecs() + ms;
-		printf("client %s  keep live %d ms\n", rpcId().data(), ms);
+		//printf("client %s  keep live %ld ms\n", rpcId().data(), ms);
 	}
 }
 

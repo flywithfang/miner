@@ -29,13 +29,13 @@
 #include "base/kernel/interfaces/IStrategyListener.h"
 #include "base/kernel/Platform.h"
 #include "base/net/stratum/Pool.h"
-
+#include "base/io/log/Log.h"
 
 xmrig::SinglePoolStrategy::SinglePoolStrategy(const Pool &pool, int retryPause, int retries, IStrategyListener *listener, bool quiet) :
     m_active(false),
     m_listener(listener)
 {
-    printf("single pool strategy\n");
+    LOG_NOTICE("single pool strategy");
     m_client = pool.createClient(0, this);
     m_client->setRetries(retries);
     m_client->setRetryPause(retryPause * 1000);

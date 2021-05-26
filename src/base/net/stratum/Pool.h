@@ -121,9 +121,7 @@ public:
     rapidjson::Value toJSON(rapidjson::Document &doc) const;
     std::string printableName() const;
 
-#   ifdef APP_DEBUG
     void print() const;
-#   endif
 
 private:
     enum Flags {

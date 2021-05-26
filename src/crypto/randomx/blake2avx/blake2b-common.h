@@ -21,7 +21,7 @@
 #define LOADU(p)  _mm256_loadu_si256( (__m256i *)(p) )
 #define STOREU(p,r) _mm256_storeu_si256((__m256i *)(p), r)
 
-static INLINE uint64_t LOADU64(void const * p) {
+static FORCE_INLINE uint64_t LOADU64(void const * p) {
   uint64_t v;
   memcpy(&v, p, sizeof v);
   return v;

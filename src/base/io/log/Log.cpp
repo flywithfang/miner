@@ -87,10 +87,10 @@ public:
 
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        if (Log::isBackground() && m_backends.empty()) {
+   /*     if (Log::isBackground() && m_backends.empty()) {
             return;
         }
-
+*/
         const uint64_t ts = timestamp(level, size, offset);
         color(level, size);
 
@@ -108,13 +108,14 @@ public:
             txt.erase(i, txt.find('m', i) - i + 1);
         }
 
-        if (!m_backends.empty()) {
+      /*  if (!m_backends.empty()) {
             for (auto backend : m_backends) {
                 backend->print(ts, level, m_buf, offset, size, true);
                 backend->print(ts, level, txt.c_str(), offset ? (offset - 11) : 0, txt.size(), false);
             }
         }
-        else {
+        else
+        */ {
             fputs(txt.c_str(), stdout);
             fflush(stdout);
         }

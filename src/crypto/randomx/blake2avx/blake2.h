@@ -1,16 +1,14 @@
 #ifndef BLAKE2_AVX2_BLAKE2_H
 #define BLAKE2_AVX2_BLAKE2_H
 
-#if !defined(__cplusplus) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L)
-  #if   defined(_MSC_VER)
-    #define INLINE __inline
-  #elif defined(__GNUC__)
-    #define INLINE __inline__
-  #else
-    #define INLINE
-  #endif
+#if defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#elif defined(__GNUC__)
+#define FORCE_INLINE __attribute__((always_inline)) inline
+#elif defined(__clang__)
+#define FORCE_INLINE __inline__
 #else
-  #define INLINE inline
+#define FORCE_INLINE
 #endif
 
 #if defined(_MSC_VER)

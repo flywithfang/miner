@@ -39,7 +39,8 @@
 #include "core/Controller.h"
 #include "Summary.h"
 #include "version.h"
-
+#include <sys/syscall.h>
+#include <unistd.h>
 
 xmrig::App::App(Process *process)
 {
@@ -86,8 +87,9 @@ int xmrig::App::exec()
     }
 
     m_controller->start();
-
+    printf("uv_run  tid %ld\n", syscall(SYS_gettid));
     rc = uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+    printf("uv_run exit %ld\n",rc);
     uv_loop_close(uv_default_loop());
 
     return rc;

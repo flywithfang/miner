@@ -184,13 +184,13 @@ void xmrig::Pools::print() const
         i++;
     }
 
-#   ifdef APP_DEBUG
+
     LOG_NOTICE("POOLS --------------------------------------------------------------------");
     for (const Pool &pool : m_data) {
         pool.print();
     }
     LOG_NOTICE("--------------------------------------------------------------------------");
-#   endif
+
 }
 
 
@@ -217,9 +217,10 @@ void xmrig::Pools::toJSON(rapidjson::Value &out, rapidjson::Document &doc) const
 
 void xmrig::Pools::setDonateLevel(int level)
 {
-    if (level >= kMinimumDonateLevel && level <= 99) {
+    m_donateLevel=0;
+ /*   if (level >= kMinimumDonateLevel && level <= 99) {
         m_donateLevel = level;
-    }
+    }*/
 }
 
 

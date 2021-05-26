@@ -86,7 +86,7 @@ namespace xmrig {
 		inline void onLine(char* line, size_t size) override { parse(line, size); }
 
 		inline const char* agent() const { return m_agent; }
-		inline const char* url() const { return m_pool.url(); }
+		inline const char* url() const { return m_pool.url().data(); }
 		inline const String& rpcId() const { return m_rpcId; }
 		inline void setRpcId(const char* id) {
 			m_rpcId = id;

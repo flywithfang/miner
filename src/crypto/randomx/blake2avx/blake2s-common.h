@@ -15,7 +15,7 @@
 #define LOADU128(p)  _mm_loadu_si128( (__m128i *)(p) )
 #define STOREU128(p,r) _mm_storeu_si128((__m128i *)(p), r)
 
-static INLINE uint32_t LOADU32(void const * p) {
+static FORCE_INLINE uint32_t LOADU32(void const * p) {
   uint32_t v;
   memcpy(&v, p, sizeof v);
   return v;

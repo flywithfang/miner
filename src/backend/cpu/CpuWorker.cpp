@@ -36,7 +36,7 @@
 #include "crypto/rx/RxDataset.h"
 #include "crypto/rx/RxVm.h"
 #include "net/JobResults.h"
-
+#include "base/io/log/Log.h"
 
 #ifdef XMRIG_ALGO_RANDOMX
 #   include "crypto/randomx/randomx.h"
@@ -210,7 +210,7 @@ void xmrig::CpuWorker<N>::hashrateData(uint64_t& hashCount, uint64_t&, uint64_t&
 template<size_t N>
 void xmrig::CpuWorker<N>::start()
 {
-	printf("thread start id %llu,affinith %llu,N %d\n", this->id(), this->affinity(), N);
+	LOG_NOTICE("thread start id %ld,affinity %ld,N %d", this->id(), this->affinity(), N);
 	uint64_t m_last_count, m_last_time;
 	m_last_count = 0; m_last_time = Chrono::steadyMSecs();
 	while (Nonce::sequence(Nonce::CPU) > 0) {
@@ -260,8 +260,8 @@ void xmrig::CpuWorker<N>::start()
 					m_last_count = m_count;
 					auto elapsed = Chrono::steadyMSecs() - m_last_time;
 					m_last_time = Chrono::steadyMSecs();
-					printf("thread %d found value %llu, target %llu,hashcount %llu,time %d ms nonce %x %x\n",
-					 this->id(), value, job.target(), e, elapsed,current_job_nonces[i],*m_job.nonce(i));
+					LOG_NOTICE("thread %ld found value %lu, target %lu,hashcount %lu,time %lds nonce %x %x job_id %s",
+					 this->id(), value, job.target(), e, elapsed/1000,current_job_nonces[i],*m_job.nonce(i),m_job.currentJob().id().data());
 					JobResults::submit(job, current_job_nonces[i], m_hash + (i * 32));
 				}
 			}
@@ -274,7 +274,7 @@ void xmrig::CpuWorker<N>::start()
 
 		consumeJob();
 	}
-	printf("thread exit");
+	LOG_NOTICE("thread exit %ld",this->id());
 }
 
 

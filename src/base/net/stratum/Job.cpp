@@ -32,7 +32,7 @@
 #include "base/net/stratum/Job.h"
 #include "base/tools/Buffer.h"
 #include "base/tools/Cvt.h"
-
+#include "base/io/log/Log.h"
 
 xmrig::Job::Job(bool nicehash, const Algorithm &algorithm, const String &clientId) :
     m_algorithm(algorithm),
@@ -73,7 +73,7 @@ bool xmrig::Job::setBlob(const char *blob)
     if (*nonce() != 0 && !m_nicehash) {
         m_nicehash = true;
     }
-    printf("nounce %x  nouncemask %x, offset %d,size %d,nicehash %d\n",*nonce(),nonceMask(),nonceOffset(),nonceSize(),m_nicehash);
+    LOG_NOTICE("nounce %x  nouncemask %lx, offset %d,size %ld,nicehash %d",*nonce(),nonceMask(),nonceOffset(),nonceSize(),m_nicehash);
 
 #   ifdef XMRIG_PROXY_PROJECT
     memset(m_rawBlob, 0, sizeof(m_rawBlob));
@@ -114,7 +114,7 @@ bool xmrig::Job::setTarget(const char *target)
     if (size == 4) {
         auto diff =0xFFFFFFFFULL / uint64_t(*reinterpret_cast<const uint32_t *>(raw.data()));
         m_target = 0xFFFFFFFFFFFFFFFFULL / diff;
-        printf("job id %s, diff %u, target %llu\n", id().data(), diff,m_target);
+        LOG_NOTICE("job id %s, diff %llu, target %lu", id().data(), diff,m_target);
     }
     else if (size == 8) {
         m_target = *reinterpret_cast<const uint64_t *>(raw.data());

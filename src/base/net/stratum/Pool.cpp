@@ -25,13 +25,14 @@
 #include <string>
 
 
+
 #include "base/net/stratum/Pool.h"
 #include "3rdparty/rapidjson/document.h"
 #include "base/io/json/Json.h"
 #include "base/io/log/Log.h"
 #include "base/kernel/Platform.h"
 #include "base/net/stratum/Client.h"
-
+#include "base/io/Env.h"
 #ifdef XMRIG_ALGO_KAWPOW
 #   include "base/net/stratum/AutoClient.h"
 #   include "base/net/stratum/EthStratumClient.h"
@@ -103,7 +104,7 @@ xmrig::Pool::Pool(const char* host, uint16_t port, const char* user, const char*
 {
 	m_flags.set(FLAG_NICEHASH, nicehash || strstr(host, kNicehashHost));
 	m_flags.set(FLAG_TLS, tls);
-	printf("pool host %s port %d keeplive %d mode %d user %s\n", host, port, keepAlive, mode, user);
+	LOG_NOTICE("pool host %s port %d keeplive %d mode %d user %s", host, port, keepAlive, mode, user);
 }
 
 
@@ -119,6 +120,10 @@ xmrig::Pool::Pool(const rapidjson::Value& object) :
 	m_user = Json::getString(object, kUser);
 	m_password = Json::getString(object, kPass);
 	m_rigId = Json::getString(object, kRigId);
+	if(m_rigId.isEmpty()){
+		m_rigId = xmrig::Env::hostname();
+		LOG_NOTICE("set rig-id with hostname %s", m_rigId.data() );
+	}
 	m_fingerprint = Json::getString(object, kFingerprint);
 	m_pollInterval = Json::getUint64(object, kDaemonPollInterval, kDefaultPollInterval);
 	m_algorithm = Json::getString(object, kAlgo);
@@ -218,11 +223,9 @@ xmrig::IClient* xmrig::Pool::createClient(int id, IClientListener* listener) con
 {
 	IClient* client = nullptr;
 
-	printf("create client  %d, m_mode %d\n", id, m_mode);
+	LOG_NOTICE("create client  %d, m_mode %d", id, m_mode);
 	if (m_mode == MODE_POOL) {
-		{
 			client = new Client(id, Platform::userAgent(), listener);
-		}
 	}
 #   ifdef XMRIG_FEATURE_HTTP
 	else if (m_mode == MODE_DAEMON) {
@@ -319,20 +322,20 @@ std::string xmrig::Pool::printableName() const
 }
 
 
-#ifdef APP_DEBUG
+
 void xmrig::Pool::print() const
 {
 	LOG_NOTICE("url:       %s", url().data());
-	LOG_DEBUG("host:      %s", host().data());
-	LOG_DEBUG("port:      %d", static_cast<int>(port()));
-	LOG_DEBUG("user:      %s", m_user.data());
-	LOG_DEBUG("pass:      %s", m_password.data());
-	LOG_DEBUG("rig-id     %s", m_rigId.data());
-	LOG_DEBUG("algo:      %s", m_algorithm.name());
-	LOG_DEBUG("nicehash:  %d", static_cast<int>(m_flags.test(FLAG_NICEHASH)));
-	LOG_DEBUG("keepAlive: %d", m_keepAlive);
+	LOG_NOTICE("host:      %s", host().data());
+	LOG_NOTICE("port:      %d", static_cast<int>(port()));
+	LOG_NOTICE("user:      %s", m_user.data());
+	LOG_NOTICE("pass:      %s", m_password.data());
+	LOG_NOTICE("rig-id     %s", m_rigId.data());
+	LOG_NOTICE("algo:      %s", m_algorithm.name());
+	LOG_NOTICE("nicehash:  %d", static_cast<int>(m_flags.test(FLAG_NICEHASH)));
+	LOG_NOTICE("keepAlive: %d", m_keepAlive);
 }
-#endif
+
 
 
 void xmrig::Pool::setKeepAlive(const rapidjson::Value& value)
