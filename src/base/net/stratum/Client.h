@@ -147,7 +147,9 @@ namespace xmrig {
 		uintptr_t m_key = 0;
 		uv_tcp_t* m_socket = nullptr;
 
+		//check bad tcp conn
 		static Storage<Client> m_storage;
+
 	};
 
 

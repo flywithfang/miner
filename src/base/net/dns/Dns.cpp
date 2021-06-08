@@ -57,7 +57,7 @@ bool xmrig::Dns::resolve(const String &host)
         clear();
     }
 
-    m_status = uv_getaddrinfo(uv_default_loop(), m_resolver, Dns::onResolved, m_host.data(), nullptr, &m_hints);
+    m_status =      (uv_default_loop(), m_resolver, Dns::onResolved, m_host.data(), nullptr, &m_hints);
 
     return m_status == 0;
 }

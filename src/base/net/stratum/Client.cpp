@@ -89,6 +89,7 @@ xmrig::Client::Client(int id, const char* agent, IClientListener* listener) :
 	m_reader.setListener(this);
 	m_key = m_storage.add(this);
 	m_dns = new Dns(this);
+	m_expire=0;
 	//printf(" client  %d, %s keeplive %ld\n", id, agent, m_keepAlive);
 }
 
@@ -276,10 +277,11 @@ void xmrig::Client::deleteLater()
 
 void xmrig::Client::tick(uint64_t now)
 {
+	assert(now>0);
 	if (m_state == ConnectedState) {
 	//	printf("tick now %lld m_keepAlive %lld\n", now,m_keepAlive);
 		if (m_expire && now > m_expire) {
-			LOG_DEBUG_ERR("[%s] timeout", url());
+			LOG_ERR("[%s] timeout", url());
 			close();
 		}
 		else if (m_keepAlive && now > m_keepAlive) {
@@ -547,28 +549,17 @@ int64_t xmrig::Client::send(size_t size)
 {
 	LOG_DEBUG("[%s] send (%d bytes): \"%.*s\"", url(), size, static_cast<int>(size) - 1, m_sendBuf.data());
 
-#   ifdef XMRIG_FEATURE_TLS
-	if (isTLS()) {
-		if (!m_tls->send(m_sendBuf.data(), size)) {
-			return -1;
-		}
-	}
-	else
-#   endif
-	{
-		if (state() != ConnectedState || !uv_is_writable(stream())) {
-			LOG_DEBUG_ERR("[%s] send failed, invalid state: %d", url(), m_state);
-			return -1;
-		}
-
-		uv_buf_t buf = uv_buf_init(m_sendBuf.data(), (unsigned int)size);
-
-		if (!write(buf)) {
-			return -1;
-		}
+	if(m_expire==0){//only set it without pending expire
+		m_expire = Chrono::steadyMSecs() + kResponseTimeout;
 	}
 
-	m_expire = Chrono::steadyMSecs() + kResponseTimeout;
+	assert(isTLS());
+	if (!m_tls->send(m_sendBuf.data(), size)) {
+		LOG_ERR("send data size %ld error",size);
+		return -1;
+	}
+
+	
 	return m_sequence++;
 }
 
@@ -602,17 +593,10 @@ void xmrig::Client::handshake()
 		return m_socks5->handshake();
 	}
 
-#   ifdef XMRIG_FEATURE_TLS
-	if (isTLS()) {
-		m_expire = Chrono::steadyMSecs() + kResponseTimeout;
 
+		m_expire = Chrono::steadyMSecs() + kResponseTimeout;
 		m_tls->handshake();
-	}
-	else
-#   endif
-	{
-		login();
-	}
+
 }
 
 
@@ -905,6 +889,7 @@ void xmrig::Client::reconnect()
 	}
 
 	m_keepAlive = 0;
+	m_expire=0;
 
 	if (m_failures == -1) {
 		return m_listener->onClose(this, -1);
@@ -919,7 +904,7 @@ void xmrig::Client::reconnect()
 
 void xmrig::Client::setState(SocketState state)
 {
-	LOG_DEBUG("[%s] state: \"%s\" -> \"%s\"", url(), states[m_state], states[state]);
+	LOG_NOTICE("[%s] state: \"%s\" -> \"%s\"", url(), states[m_state], states[state]);
 
 	if (m_state == state) {
 		return;
